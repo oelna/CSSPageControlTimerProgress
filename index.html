@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+	<title>Slideshow</title>
+
+	<link rel="stylesheet" href="progress.css" />
+</head>
+<body>
+
+	<div class="container">
+
+		<div class="slideshow">
+			<ul>
+				<li class="active">Slide 1</li>
+				<li>Slide 2</li>
+				<li>Slide 3</li>
+				<li>Slide 4</li>
+				<li>Slide 5</li>
+			</ul>
+			<nav>
+				<div class="buttons">
+					<button class="pause" title="Play / Pause">Pause</button>
+				</div>
+				<div class="dots">
+					<progress max="100" value="30"></progress>
+					<progress max="100" value="30"></progress>
+					<progress max="100" value="30"></progress>
+					<progress max="100" value="30"></progress>
+					<progress max="100" value="30"></progress>
+				</div>
+				<div class="buttons">
+					<!-- intentionally left blank -->
+				</div>
+			</nav>
+		</div>
+	
+	</div>
+
+	<script type="module">
+		let timer = null;
+		const timeout = 4000;
+		const slideshow = document.querySelector('.slideshow');
+
+		function activateNext (target) {
+			const slides = document.querySelectorAll('.slideshow > ul li');
+
+			let prev = document.querySelector('.slideshow progress.active');
+			if (prev) {
+				prev.classList.remove('active');
+				prev.value = 30;
+
+				// hide the current slideshow slide, too
+				const slide = document.querySelector('.slideshow > ul li.active');
+				slide.classList.remove('active');
+			}
+
+			let next = target;
+			if (!target) {
+				if (prev) {
+					next = prev.nextElementSibling;	
+				}
+				if (!next) {
+					next = document.querySelector('.slideshow progress:first-of-type');
+				}
+			}
+
+			next.value = 30;
+			next.classList.add('active');
+			next.value = 100;
+
+			// show the corresponding slide
+			const index = Array.from(next.parentElement.children).indexOf(next);
+			slides[index].classList.add('active');
+
+			if (!next.closest('.slideshow').classList.contains('paused')) {
+				clearTimeout(timer);
+				timer = setTimeout(activateNext, timeout);
+			}
+		}
+
+		slideshow.style.setProperty('--timeout', timeout + 'ms');
+		slideshow.addEventListener('click', function (event) {
+			event.preventDefault();
+
+			const ele = event.target;
+
+			if (ele.tagName.toLowerCase() == 'progress') {
+				activateNext(ele);
+			}
+		});
+
+		slideshow.querySelector('nav .pause').addEventListener('click', function (event) {
+			event.target.closest('.slideshow').classList.toggle('paused');
+			event.target.textContent = (event.target.textContent == 'Pause') ? 'Play' : 'Pause';
+
+			const current = document.querySelector('.slideshow progress.active');
+
+			if (timer !== null) {
+				current.value = 30;
+
+				clearTimeout(timer);
+				timer = null;
+			} else {
+				timer = setTimeout(activateNext, 200, current);
+			}
+		});
+
+		timer = setTimeout(activateNext, 500);
+	</script>
+</body>
+</html>
